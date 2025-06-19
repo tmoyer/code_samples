@@ -1,6 +1,6 @@
 /**
  * @file
- * Allows validation of the amount field to occur before submitting.
+ * Validation of at least 2 letters in keyword field for search before submitting.
  */
 (function ($, Drupal, once) {
   Drupal.behaviors.keywordValidateSubmit = {
