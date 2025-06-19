@@ -1,6 +1,6 @@
 /**
  * @file
- * Handles applying input mask to the phone field.
+ * Handles applying input mask to the amount field.
  */
 (function ($, Drupal, once) {
 
