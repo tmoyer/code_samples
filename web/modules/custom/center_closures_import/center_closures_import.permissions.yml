@@ -1,0 +1,4 @@
+allow user to import closures data:
+  title: 'Allow user to import Closures data'
+  description: 'This permission will allow user to import data'
+  

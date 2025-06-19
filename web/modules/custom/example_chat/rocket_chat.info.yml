@@ -1,0 +1,5 @@
+name: 'Example Chat'
+type: module
+description: 'Rocket.chat functionality for conferences.'
+core_version_requirement: ^9 || ^10
+package: 'Custom'

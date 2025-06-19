@@ -1,0 +1,109 @@
+<?php
+
+use Drupal\node\Entity\Node;
+
+/**
+ * @file
+ * To add import features.
+ */
+
+
+/**
+ * Implements hook_cron().
+ */
+function center_closures_import_cron() {
+  // Get closure node ids.
+  $closures_to_be_unpublished = \Drupal::state()->get('closures_to_be_unpublished');
+
+  $now = time();
+
+  // If there is no array of closures, stop here.
+  if (!$closures_to_be_unpublished) {
+    return;
+  }
+
+  // Check for nodes to be unpublished.
+  foreach ($closures_to_be_unpublished as $nid => $date) {
+    if ($now >= $date) {
+      $node = Node::load($nid);
+
+      // If node didn't load, it doesn't exist.
+      if (!$node) {
+        unset($closures_to_be_unpublished[$nid]);
+        continue;
+      }
+
+      if ($node instanceof \Drupal\node\NodeInterface) {
+        try {
+          $node->status = 0;
+          $node->save();
+          unset($closures_to_be_unpublished[$nid]);
+        }
+        catch (\Exception $e) {
+          \Drupal::logger('center_closures_import')->notice('Oops, node likely not loaded: ' . $e);
+        }
+      } else {
+        // This node does not exist, so delete it from the list.
+        unset($closures_to_be_unpublished[$nid]);
+      }
+    }
+  }
+
+  // Update closures_to_be_unpublished state.
+  if (!empty($closures_to_be_unpublished)) {
+    \Drupal::state()->set('closures_to_be_unpublished', $closures_to_be_unpublished);
+  } else {
+    \Drupal::state()->delete('closures_to_be_unpublished');
+  }
+}
+
+/**
+ * Implements hook_entity_update().
+ *
+ * Check if publish dates are changed update status or add to list to be updated.
+ */
+function center_closures_import_entity_update(Drupal\Core\Entity\EntityInterface $entity) {
+  // Only proceed if this is a test_center_closure node.
+  if ($entity->getEntityTypeId() != 'node' || $entity->bundle() != 'test_center_closure') {
+    return;
+  }
+  $now = time();
+  $nid = $entity->id();
+  $ts = center_closures_import_get_publish_ts($nid);
+  $closures_to_be_unpublished = \Drupal::state()->get('closures_to_be_unpublished');
+
+  // If end date for unpublish changed & date is in the future, include in closures_to_be_unpublished.
+  if (isset($closures_to_be_unpublished[$nid]) && isset($ts['unpublished'])) {
+    if ($closures_to_be_unpublished[$nid] != $ts['unpublish']) {
+      $closures_to_be_unpublished[$nid] = $ts['unpublish'];
+      \Drupal::state()->set('closures_to_be_unpublished', $closures_to_be_unpublished);
+    }
+  }
+}
+
+/**
+ * Helper function that gets closure start & end date timestamps to use with cron.
+ */
+function center_closures_import_get_publish_ts($entity_id) {
+  $ts = [];
+  // Get date publish ts.
+  $database = \Drupal::database();
+  $result = $database->query("SELECT su.update_timestamp FROM node__schedule_publish nsp INNER JOIN scheduled_update su ON nsp.schedule_publish_target_id = su.id WHERE nsp.entity_id = :nid", [
+    ':nid' => $entity_id,
+  ]);
+  if ($result) {
+    while ($row = $result->fetchAssoc()) {
+      $ts['publish'] = $row['update_timestamp'];
+    }
+  }
+
+  $result = $database->query("SELECT su.update_timestamp FROM node__schedule_unpublish nsp INNER JOIN scheduled_update su ON nsp.schedule_unpublish_target_id = su.id WHERE nsp.entity_id = :nid", [
+    ':nid' => $entity_id,
+  ]);
+  if ($result) {
+    while ($row = $result->fetchAssoc()) {
+      $ts['unpublish'] = $row['update_timestamp'];
+    }
+  }
+  return $ts;
+}

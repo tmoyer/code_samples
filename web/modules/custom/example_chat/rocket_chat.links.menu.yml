@@ -1,0 +1,6 @@
+example_chat.chat_settings_link:
+  title: 'Example Chat'
+  description: 'Example Chat configuration.'
+  parent: 'system.admin_config_services'
+  route_name: example_chat.chat_settings
+  weight: 100

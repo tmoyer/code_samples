@@ -1,0 +1,7 @@
+center_closures_import.import_form:
+  path: '/admin/config/closures/import'
+  defaults:
+    _form: '\Drupal\center_closures_import\Form\ImportForm'
+    _title: 'Import Closures Data'
+  requirements:
+    _permission: 'allow user to import closures data'

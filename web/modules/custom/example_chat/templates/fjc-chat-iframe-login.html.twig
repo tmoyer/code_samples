@@ -1,0 +1,9 @@
+<script>
+  console.log('Attempting to login via token.');
+  jQuery(document).ready(function() {
+    document.getElementById('{{ iframe_id }}').contentWindow.postMessage({
+      event: 'login-with-token',
+      loginToken: '{{ token }}'
+    }, '{{ rc_url }}');
+  });
+</script>

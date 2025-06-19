@@ -1,0 +1,27 @@
+entity.node.chat:
+  path: '/chat/{node}'
+  defaults:
+    _controller: '\Drupal\example_chat\Controller\RocketChatController::conferenceChatPage'
+    _title: 'Conference Chat'
+  requirements:
+    _custom_access: '\Drupal\example_chat\Controller\RocketChatController::chatAccess'
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+example_chat.chat_settings:
+  path: '/admin/config/services/example-chat'
+  defaults:
+    _form: '\Drupal\example_chat\Form\RocketChatSettingsForm'
+    _title: 'Chat Settings'
+  requirements:
+    _permission: 'administer site configuration'
+
+example_chat.iframe_login:
+  path: '/chat-iframe-login'
+  defaults:
+    _controller: '\Drupal\example_chat\Controller\RocketChatController::iframeLogin'
+    _title: 'Chat Login'
+  requirements:
+    _access: 'TRUE'

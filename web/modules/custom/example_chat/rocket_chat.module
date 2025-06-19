@@ -1,0 +1,166 @@
+<?php
+
+/**
+ * @file
+ * Contains example_chat.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function example_chat_theme() {
+  return [
+    'example_chat_iframe_login' => [
+      'template' => 'chat-iframe-login',
+      'variables' => [
+        'token' => NULL,
+        'rc_url' => NULL,
+        'iframe_id' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function example_chat_entity_insert(\Drupal\Core\Entity\EntityInterface $entity) {
+  // Create a Rocket.Chat group on conference insert.
+  if ($entity->getEntityTypeId() == 'node' && $entity->bundle() == 'conference') {
+    /** @var \Drupal\example_chat\RocketChatService $chat_service */
+    $chat_service = \Drupal::service('example_chat.chat');
+
+    if ($channel_info = $chat_service->createChatGroup($entity)) {
+      $entity->set('field_rocketchat_channel', $channel_info['channel']);
+      $entity->set('field_rocketchat_channel_id', $channel_info['channel_id']);
+      $entity->save();
+    } else {
+      $conf_title = $entity->getTitle() ?? '[no title]';
+      \Drupal::logger('example_chat')->error('A conference was created for ' . $conf_title . ', but a Rocket.Chat group could not be created.');
+    }
+
+    // Add registrants to the rocket.chat conference room.
+    $registrants = $entity->field_registrants->getValue();
+    if (is_array($registrants) && !empty($channel_info['channel_id'])) {
+      foreach ($registrants as $registrant) {
+        $account = user_load_by_mail($registrant['value']);
+        if (($account instanceof UserInterface) && $auth_data = $chat_service->getAuthToken($account)) {
+          $rc_user_id = $auth_data['userId'];
+          $chat_service->joinConference($rc_user_id, $channel_info['channel_id']);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ */
+function example_chat_entity_presave(\Drupal\Core\Entity\EntityInterface $entity) {
+  // Skip new nodes, only act on updates.
+  if (!$entity->original || empty($entity->original) || $entity->isNew()) {
+    return;
+  }
+
+  if ($entity->getEntityTypeId() == 'node' && $entity->bundle() == 'conference') {
+    /** @var \Drupal\example_chat\RocketChatService $chat_service */
+    $chat_service = \Drupal::service('example_chat.chat');
+    $channel_info = [];
+
+    // Create a Rocket.Chat group on conference update if none exists.
+    if (!$entity->field_rocketchat_channel->value) {
+      if ($channel_info = $chat_service->createChatGroup($entity)) {
+        $entity->set('field_rocketchat_channel', $channel_info['channel']);
+        $entity->set('field_rocketchat_channel_id', $channel_info['channel_id']);
+      }
+    }
+
+    if (empty($channel_info)) {
+      $channel_info = [];
+      $channel_info['channel_id'] = $entity->field_rocketchat_channel->value;
+    }
+
+    // Determine if registrants have been added or removed.
+    $registrants = (isset($entity->field_registrants)) ? $entity->field_registrants->getValue() : [];
+    $orig_registrants = (isset($entity->original->field_registrants)) ? $entity->original->field_registrants->getValue() : [];
+    $old_regs = [];
+    $new_regs = [];
+    foreach ($registrants as $value) {
+      $new_regs[] = $value['value'];
+    }
+    foreach ($orig_registrants as $value) {
+      $old_regs[] = $value['value'];
+    }
+    $added = array_diff($new_regs, $old_regs);
+    $removed = array_diff($old_regs, $new_regs);
+
+    // Add registrants to chat room.
+    if (is_array($added) && !empty($channel_info['channel_id'])) {
+      foreach ($new_regs as $registrant) {
+        $target_user = user_load_by_mail($registrant);
+        if (($target_user instanceof UserInterface) && $auth_data = $chat_service->getAuthToken($target_user)) {
+          $rc_user_id = $auth_data['userId'];
+          $chat_service->joinConference($rc_user_id, $channel_info['channel_id']);
+          \Drupal::logger('example_chat')->notice('Added ' . $target_user->getDisplayName() . ' to conf channel ' . $channel_info['channel_id']);
+        }
+      }
+    }
+
+    // Removed registrants from chat room.
+    if (is_array($removed) && !empty($channel_info['channel_id'])) {
+      foreach ($removed as $registrant) {
+        $target_user = user_load_by_mail($registrant);
+        if (($target_user instanceof UserInterface) && $auth_data = $chat_service->getAuthToken($target_user)) {
+          $rc_user_id = $auth_data['userId'];
+          $chat_service->leaveConference($rc_user_id, $channel_info['channel_id']);
+          \Drupal::logger('example_chat')->notice('Removed ' . $target_user->getDisplayName() . ' from conf channel ' . $channel_info['channel_id']);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function example_chat_entity_delete(Drupal\Core\Entity\EntityInterface $entity) {
+  // Delete a Rocket.Chat group on conference insert.
+  if ($entity->getEntityTypeId() == 'node' && $entity->bundle() == 'conference') {
+    /** @var \Drupal\example_chat\RocketChatService $chat_service */
+    $chat_service = \Drupal::service('example_chat.chat');
+    
+    $channel_info = $chat_service->deleteChatGroup($entity);
+  }
+}
+
+/**
+ * Implements hook_user_logout().
+ */
+function example_chat_user_logout(\Drupal\Core\Session\AccountInterface $account) {
+  $account_user = \Drupal\user\Entity\User::load($account->id());
+
+  /** @var \Drupal\example_chat\RocketChatService $chat_service */
+  $chat_service = \Drupal::service('example_chat.chat');
+
+  if (is_object($account_user)) {
+    $chat_service->logout($account_user);
+    // Remove auth data, we'll get fresh data later.
+    $account_user->set('field_rocketchat_auth_data', '');
+    $account_user->save();
+    // To avoid a caching issue with showing user
+    // not logged in to rocket chat, clear cache.
+    drupal_flush_all_caches();
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function example_chat_cron() {
+  /** @var \Drupal\example_chat\RocketChatService $chat_service */
+  $chat_service = \Drupal::service('example_chat.chat');
+  $chat_service->bulkJoinMembers();
+}

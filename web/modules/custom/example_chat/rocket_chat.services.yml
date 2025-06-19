@@ -1,0 +1,9 @@
+services:
+  example_chat.chat:
+    class: Drupal\example_chat\RocketChatService
+    arguments:
+      - '@config.factory'
+  example_chat.subscriber:
+    class: Drupal\example_chat\EventSubscriber\RocketChatEventSubscriber
+    tags:
+      - { name: event_subscriber }

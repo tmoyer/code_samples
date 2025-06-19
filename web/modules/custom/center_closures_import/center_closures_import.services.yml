@@ -1,0 +1,3 @@
+services:
+  center_closures_import.import_subscriber:
+    class: Drupal\center_closures_import\Services\ImportSubscriber

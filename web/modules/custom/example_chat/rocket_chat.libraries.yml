@@ -1,0 +1,3 @@
+example_chat.iframe-login:
+  js:
+    js/iframe-login.js: {}
