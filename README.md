@@ -1,5 +1,7 @@
 # code_samples
-A few Drupal module &amp; theme code samples
+A few Drupal module &amp; theme code samples.
+
+MIT Licensed—feel free to use or adapt.
 
 ## Sample Modules
 ### center_closures_import
