@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Migrate Example module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function migrate_example_migrate_install() {
+  \Drupal::messenger()->addStatus(__FUNCTION__);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function migrate_example_migrate_uninstall() {
+  $migrate_configs = [];
+
+  foreach ($migrate_configs as $config) {
+    \Drupal::database()
+      ->delete('config')
+      ->condition('name', $config)
+      ->execute();
+  }
+
+  drupal_flush_all_caches();
+  \Drupal::messenger()->addStatus(__FUNCTION__);
+}

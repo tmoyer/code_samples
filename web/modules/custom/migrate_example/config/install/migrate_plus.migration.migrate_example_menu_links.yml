@@ -1,0 +1,338 @@
+id: migrate_example_menu_links
+label: 'Menu links'
+audit: true
+migration_tags:
+  - 'Migration Example'
+  - 'Drupal 7'
+  - 'Menu links'
+  - menu
+
+dependencies:
+  enforced:
+    module:
+      - migrate_example_migrate
+
+source:
+  plugin: menu_link
+  constants:
+    BUNDLE: menu_link_content
+    IS_DEFAULT_LANGCODE: 1
+
+destination:
+  plugin: entity:menu_link_content
+  no_stub: true
+
+migration_dependencies:
+  required:
+    - migrate_example_menu
+  optional:
+    - migrate_example_node_basic_page
+    - migrate_example_node_home_page
+    - migrate_example_node_space
+    - migrate_example_node_tenant
+    - migrate_example_node_webform
+
+process:
+  skip_translation:
+    plugin: skip_on_empty
+    method: row
+    source: skip_translation
+
+  # ID: id
+  # Label: Entity ID
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: integer
+  # Cardinality: 1
+  id: mlid
+
+  # ID: uuid
+  # Label: UUID
+  # Property type: varchar_ascii
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: uuid
+  # Cardinality: 1
+  #
+  # It will be auto-generated.
+
+  # ID: revision_id
+  # Label: Revision ID
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: integer
+  # Cardinality: 1
+  #
+  # It will be auto-generated.
+
+  # ID: langcode
+  # Label: Language
+  # Property type: varchar_ascii
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: language
+  # Cardinality: 1
+  langcode:
+    plugin: default_value
+    source: language
+    default_value: en
+
+  # ID: bundle
+  # Label: Custom menu link bundle
+  # Property type: varchar_ascii
+  # Translatable: FALSE
+  # Mandatory: TRUE
+  # Field type: entity_reference
+  # Cardinality: 1
+  # Default value: menu_link_content
+  bundle: constants/BUNDLE
+
+  # ID: revision_user
+  # Label: Revision user
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: entity_reference
+  # Cardinality: 1
+  revision_user: { }
+
+  # ID: revision_log_message
+  # Label: Revision log message
+  # Property type: text
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: string_long
+  # Cardinality: 1
+  revision_log_message: { }
+
+  # ID: enabled
+  # Label: Enabled
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  enabled: enabled
+
+  # ID: title
+  # Label: Menu link title
+  # Property type: varchar
+  # Translatable: TRUE
+  # Mandatory: TRUE
+  # Field type: string
+  # Cardinality: 1
+  title: link_title
+
+  # ID: description
+  # Label: Description
+  # Property type: varchar
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: string
+  # Cardinality: 1
+  description: description
+
+  # ID: menu_name
+  # Label: Menu name
+  # Property type: varchar_ascii
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: string
+  # Cardinality: 1
+  menu_name:
+    - plugin: migration_lookup
+      migration: migrate_example_menu
+      source: menu_name
+    - plugin: skip_on_empty
+      method: row
+
+  # ID: link
+  # Label: Link
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: link
+  # Cardinality: 1
+  #
+  #   - ID: link/uri
+  #     Label: Link / uri
+  #     Translatable: FALSE
+  #     Mandatory: TRUE
+  #     Property type: varchar
+  #
+  #   - ID: link/title
+  #     Label: Link / title
+  #     Translatable: FALSE
+  #     Mandatory: TRUE
+  #     Property type: varchar
+  #
+  #   - ID: link/options
+  #     Label: Link / options
+  #     Translatable: FALSE
+  #     Mandatory: TRUE
+  #     Property type: blob
+  'link/uri':
+    plugin: link_uri
+    source: link_path
+  'link/options': options
+
+  # ID: external
+  # Label: External
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  external: external
+
+  # ID: rediscover
+  # Label: Indicates whether the menu link should be rediscovered
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  rediscover: { }
+
+  # ID: weight
+  # Label: Weight
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: integer
+  # Cardinality: 1
+  weight: weight
+
+  # ID: expanded
+  # Label: Show as expanded
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  expanded: expanded
+
+  # ID: parent
+  # Label: Parent plugin ID
+  # Property type: varchar
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: string
+  # Cardinality: 1
+  parent:
+    plugin: menu_link_parent
+    source:
+      - plid
+      - '@menu_name'
+      - parent_link_path
+
+  # ID: changed
+  # Label: Changed
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: changed
+  # Cardinality: 1
+  changed: updated
+
+  # ID: default_langcode
+  # Label: Default translation
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  # Default value: 1
+  default_langcode: constants/IS_DEFAULT_LANGCODE
+
+  # ID: revision_default
+  # Label: Default revision
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  revision_default: { }
+
+  # ID: revision_translation_affected
+  # Label: Revision translation affected
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  # Default value: 1
+  revision_translation_affected: { }
+
+  # ID: link_override
+  # Label: Translatable External Link Override
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: link
+  # Cardinality: 1
+  #
+  #   - ID: link_override/uri
+  #     Label: Translatable External Link Override / uri
+  #     Translatable: FALSE
+  #     Mandatory: TRUE
+  #     Property type: varchar
+  #
+  #   - ID: link_override/title
+  #     Label: Translatable External Link Override / title
+  #     Translatable: FALSE
+  #     Mandatory: TRUE
+  #     Property type: varchar
+  #
+  #   - ID: link_override/options
+  #     Label: Translatable External Link Override / options
+  #     Translatable: FALSE
+  #     Mandatory: TRUE
+  #     Property type: blob
+  link_override : { }
+
+  # ID: content_translation_source
+  # Label: Translation source
+  # Property type: varchar_ascii
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: language
+  # Cardinality: 1
+  content_translation_source: { }
+
+  # ID: content_translation_outdated
+  # Label: Translation outdated
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  content_translation_outdated: { }
+
+  # ID: content_translation_uid
+  # Label: Translation author
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: entity_reference
+  # Cardinality: 1
+  content_translation_uid: { }
+
+  # ID: content_translation_status
+  # Label: Translation status
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  content_translation_status: { }
+
+  route:
+    plugin: route
+    source:
+      - link_path
+      - options
+  route_name: '@route/route_name'
+  route_parameters: '@route/route_parameters'
+  url: '@route/url'
+  options: '@route/options'

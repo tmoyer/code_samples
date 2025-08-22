@@ -1,0 +1,473 @@
+id: migrate_example_node_basic_page
+label: 'Nodes (basic_page to basic_page)'
+migration_group: migrate_example_migrate
+migration_tags:
+  - 'Migration Example'
+  - 'Drupal 7'
+  - node
+  - basic_page
+
+dependencies:
+  enforced:
+    module:
+      - migrate_example_migrate
+
+migration_dependencies:
+  required:
+    - migrate_example_user
+    - migrate_example_managed_public_files
+    - migrate_example_media_images
+    - migrate_example_media_documents
+    - migrate_example_paragraph_video
+    - migrate_example_paragraph_featured_card
+    - migrate_example_paragraph_full_size_image
+    - migrate_example_paragraph_articles
+    - migrate_example_paragraph_recommended_block
+
+source:
+  plugin: d7_node
+  translations: false
+  node_type: basic_page
+  constants:
+    IS_DEFAULT_LANGCODE: 1
+
+destination:
+  plugin: entity:node
+  translations: false
+  default_bundle: basic_page
+
+process:
+
+  # ID: nid
+  # Label: ID
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: integer
+  # Cardinality: 1
+  #
+  # Do not map, in order to allow incremental migrations.
+  # nid: { }
+
+  # ID: uuid
+  # Label: UUID
+  # Property type: varchar_ascii
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: uuid
+  # Cardinality: 1
+  #
+  # It will be auto-generated.
+
+  # ID: vid
+  # Label: Revision ID
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: integer
+  # Cardinality: 1
+  #
+  # It will be auto-generated.
+
+  # ID: langcode
+  # Label: Language
+  # Property type: varchar_ascii
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: language
+  # Cardinality: 1
+  langcode:
+    - plugin: default_value
+      default_value: en
+
+  # ID: type
+  # Label: Content type
+  # Property type: varchar_ascii
+  # Translatable: FALSE
+  # Mandatory: TRUE
+  # Field type: entity_reference
+  # Cardinality: 1
+  type:
+    - plugin: default_value
+      default_value: basic_page
+
+  # ID: revision_timestamp
+  # Label: Revision create time
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: created
+  # Cardinality: 1
+  revision_timestamp: timestamp
+
+  # ID: revision_uid
+  # Label: Revision user
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: entity_reference
+  # Cardinality: 1
+  revision_uid:
+    - plugin: migration_lookup
+      source: revision_uid
+      migration: migrate_example_user
+      no_stub: true
+    - plugin: default_value
+      default_value: 0
+
+  # ID: revision_log
+  # Label: Revision log message
+  # Property type: text
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: string_long
+  # Cardinality: 1
+  revision_log: log
+
+  # ID: status
+  # Label: Published
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  # Default value: 1
+  status: status
+
+  # ID: uid
+  # Label: Authored by
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: entity_reference
+  # Cardinality: 1
+  uid:
+    - plugin: migration_lookup
+      source: node_uid
+      migration: migrate_example_user
+      no_stub: true
+    - plugin: default_value
+      default_value: 0
+
+  # ID: title
+  # Label: Page title
+  # Property type: varchar
+  # Translatable: TRUE
+  # Mandatory: TRUE
+  # Field type: string
+  # Cardinality: 1
+  title:
+    # Remove whitespace.
+    - plugin: callback
+      source: title
+      callable: trim
+    # The destination field has a limit of 255 characters.
+    - plugin: substr
+      length: 255
+
+  # ID: created
+  # Label: Authored on
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: created
+  # Cardinality: 1
+  # Default value: current timestamp
+  created: created
+
+  # ID: changed
+  # Label: Changed
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: changed
+  # Cardinality: 1
+  # Default value: current timestamp
+  changed: changed
+
+  # ID: promote
+  # Label: Promoted to front page
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  # Default value: 1
+  promote: promote
+
+  # ID: sticky
+  # Label: Sticky at top of lists
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  # Default value: 0
+  sticky: sticky
+
+  # ID: default_langcode
+  # Label: Default translation
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  # Default value: 1
+  default_langcode: constants/IS_DEFAULT_LANGCODE
+
+  # ID: revision_default
+  # Label: Default revision
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  revision_default: { }
+
+  # ID: revision_translation_affected
+  # Label: Revision translation affected
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  # Default value: 1
+  revision_translation_affected: { }
+
+  # ID: content_translation_source
+  # Label: Translation source
+  # Property type: varchar_ascii
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: language
+  # Cardinality: 1
+  content_translation_source: { }
+
+  # ID: content_translation_outdated
+  # Label: Translation outdated
+  # Property type: int
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  content_translation_outdated: { }
+
+  # ID: field_featured_image
+  # Label: Featured image
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: entity_reference
+  # Cardinality: UNLIMITED
+  field_featured_image:
+    - plugin: migration_lookup
+      source: field_featured_image/0/fid
+      migration: migrate_example_media_images
+      no_stub: true
+
+  # ID: body
+  # Label: Body text
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: text_with_summary
+  # Cardinality: 1
+  #
+  #   - ID: body/value
+  #     Label: Description / value
+  #     Translatable: TRUE
+  #     Mandatory: FALSE
+  #     Property type: text
+  #
+  #   - ID: body/summary
+  #     Label: Description / summary
+  #     Translatable: TRUE
+  #     Mandatory: FALSE
+  #     Property type: text
+  #
+  #   - ID: body/format
+  #     Label: Description / summary
+  #     Translatable: TRUE
+  #     Mandatory: FALSE
+  #     Property type: varchar_ascii
+
+  body/value: field_body/0/value
+
+  body/summary: field_body/0/summary
+
+  body/format:
+    - plugin: default_value
+      default_value: full_html
+
+  # ID: field_features
+  # Label: Features
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: text_long
+  # Cardinality: UNLIMITED
+  #
+  #   - ID: field_features/value
+  #     Label: Features / value
+  #     Translatable: FALSE
+  #     Mandatory: FALSE
+  #     Property type: text
+  #
+  #   - ID: field_features/format
+  #     Label: Features / format
+  #     Translatable: FALSE
+  #     Mandatory: FALSE
+  #     Property type: varchar_ascii
+  field_features:
+    - plugin: sub_process
+      source: field_features
+      include_source: true
+      process:
+        value: value
+        # The "format" value is defined based on the following mapping.
+        format:
+          - plugin: default_value
+            default_value: full_html
+
+  # ID: field_video
+  # Label: Video / target_id
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: entity_reference_revisions
+  # Cardinality: UNLIMITED
+  field_video:
+    - plugin: sub_process
+      source: field_video
+      include_source: true
+      process:
+        target_id:
+          - source: value
+            plugin: migration_lookup
+            migration: migrate_example_paragraph_video
+            no_stub: true
+          - plugin: extract
+            index:
+              - 0
+        target_revision_id:
+          - source: value
+            plugin: migration_lookup
+            migration: migrate_example_paragraph_video
+            no_stub: true
+          - plugin: extract
+            index:
+              - 0
+
+  # ID: field_featured_card
+  # Label: Featured card / target_id
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: entity_reference_revisions
+  # Cardinality: UNLIMITED
+  field_featured_card:
+    - plugin: sub_process
+      source: field_featured_card
+      include_source: true
+      process:
+        target_id:
+          - source: value
+            plugin: migration_lookup
+            migration: migrate_example_paragraph_featured_card
+            no_stub: true
+          - plugin: extract
+            index:
+              - 0
+        target_revision_id:
+          - source: value
+            plugin: migration_lookup
+            migration: migrate_example_paragraph_featured_card
+            no_stub: true
+          - plugin: extract
+            index:
+              - 0
+
+  # ID: field_full_size_image
+  # Label: Full-Size Image / target_id
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: entity_reference_revisions
+  # Cardinality: UNLIMITED
+  field_full_size_image:
+    - plugin: sub_process
+      source: field_full_size_image
+      include_source: true
+      process:
+        target_id:
+          - source: value
+            plugin: migration_lookup
+            migration: migrate_example_full_size_image
+            no_stub: true
+          - plugin: extract
+            index:
+              - 0
+        target_revision_id:
+          - source: value
+            plugin: migration_lookup
+            migration: migrate_example_full_size_image
+            no_stub: true
+          - plugin: extract
+            index:
+              - 0
+
+  # ID: field_articles
+  # Label: Articles / target_id
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: entity_reference_revisions
+  # Cardinality: UNLIMITED
+  field_articles:
+    - plugin: sub_process
+      source: field_articles
+      include_source: true
+      process:
+        target_id:
+          - source: value
+            plugin: migration_lookup
+            migration: migrate_example_paragraph_articles
+            no_stub: true
+          - plugin: extract
+            index:
+              - 0
+        target_revision_id:
+          - source: value
+            plugin: migration_lookup
+            migration: migrate_example_paragraph_articles
+            no_stub: true
+          - plugin: extract
+            index:
+              - 0
+
+  # ID: field_recommended_block
+  # Label: Recommended block / target_id
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: entity_reference_revisions
+  # Cardinality: UNLIMITED
+  field_recommended_block:
+    - plugin: sub_process
+      source: field_recommended_block
+      include_source: true
+      process:
+        target_id:
+          - source: value
+            plugin: migration_lookup
+            migration: migrate_example_paragraph_recommended_block
+            no_stub: true
+          - plugin: extract
+            index:
+              - 0
+        target_revision_id:
+          - source: value
+            plugin: migration_lookup
+            migration: migrate_example_paragraph_recommended_block
+            no_stub: true
+          - plugin: extract
+            index:
+              - 0

@@ -1,0 +1,65 @@
+id: migrate_example_menu
+label: 'Menus'
+migration_tags:
+  - 'Migration Example'
+  - 'Drupal 7'
+  - menu
+
+dependencies:
+  enforced:
+    module:
+      - migrate_example_migrate
+
+source:
+  plugin: menu
+
+destination:
+  plugin: entity:menu
+
+process:
+  # ID: id
+  # Label: Entity ID
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: integer
+  # Cardinality: 1
+  id:
+    plugin: static_map
+    bypass: true
+    source: menu_name
+    map:
+      main-menu: main
+      management: admin
+      navigation: tools
+      user-menu: account
+
+  # ID: label
+  # Label: Menu link title
+  # Property type: varchar
+  # Translatable: TRUE
+  # Mandatory: TRUE
+  # Field type: string
+  # Cardinality: 1
+  label: title
+
+  # ID: description
+  # Label: Description
+  # Property type: varchar
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: string
+  # Cardinality: 1
+  description: description
+
+  # ID: langcode
+  # Label: Language
+  # Property type: varchar_ascii
+  # Translatable: TRUE
+  # Mandatory: FALSE
+  # Field type: language
+  # Cardinality: 1
+  langcode:
+    plugin: default_value
+    source: language
+    default_value: en

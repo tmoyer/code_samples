@@ -1,0 +1,10 @@
+name: Migrate Example
+type: module
+description: Migrates data from Drupal 7 into Drupal 10.
+package: Custom
+core_version_requirement: ^9 || ^10
+
+dependencies:
+  - drupal:migrate
+  - drupal:migrate_tools
+  - drupal:migrate_plus
