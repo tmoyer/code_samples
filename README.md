@@ -36,6 +36,17 @@ Client wanted each conference (content type) to have it's own Rocket.Chat channe
 * Twig
 
 
+### 🧩 [migrate_example](https://github.com/tmoyer/code_samples/tree/main/web/modules/custom/migrate_example)
+Example migration module that shows a sampling of migration code to includes a basic page content type, menu and menu links, as well as custom source and process plugins.
+
+#### Problem Addressed
+Client needed to upgrade from Drupal 7 to 10, but there is no upgrade path from 7 to 8, so content must be migrated instead.
+
+#### Technologies Used
+* PHP
+* Drupal
+
+
 ## Sample JS in the theme
 ### 🧩 [allow_in.js](https://github.com/tmoyer/code_samples/blob/main/web/themes/custom/example_theme/src/js/allow_in.js)
 Requires users to have accepted terms of use before accessing most pages on the site but allows white listed bots (like Googlebot and other necessary bots) to access pages.

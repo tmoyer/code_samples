@@ -1,0 +1,131 @@
+id: migrate_example_url_alias
+label: 'URL aliases (url_alias to path_alias)'
+migration_tags:
+  - 'Migration Example'
+  - 'Drupal 7'
+  - 'URL Aliases'
+
+dependencies:
+  enforced:
+    module:
+      - migrate_example_migrate
+
+migration_dependencies:
+  required:
+    - migrate_example_node_basic_page
+    - migrate_example_node_home_page
+    - migrate_example_node_webform
+
+source:
+  plugin: d7_url_alias
+  constants:
+    slash: '/'
+
+destination:
+  plugin: entity:path_alias
+
+process:
+  # ID: id
+  # Label: ID
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: integer
+  # Cardinality: 1
+  #
+  # Do not map, in order to allow incremental migrations.
+  # id: pid
+
+  # ID: uuid
+  # Label: UUID
+  # Property type: varchar_ascii
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: uuid
+  # Cardinality: 1
+  #
+  # It will be auto-generated.
+
+  # ID: revision_id
+  # Label: Revision ID
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: integer
+  # Cardinality: 1
+  #
+  # It will be auto-generated.
+
+  # ID: langcode
+  # Label: Language
+  # Property type: varchar_ascii
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: language
+  # Cardinality: 1
+  langcode:
+    - plugin: default_value
+      default_value: en
+      # node_translation:
+      #   - plugin: explode
+      #     source: source
+      #     delimiter: /
+      #     # If the source path has no slashes return a dummy default value.
+      #   - plugin: extract
+      #     default: 'INVALID_NID'
+      #     index:
+      #       - 1
+      #   - plugin: migration_lookup
+      #     migration:
+      #       - d7_node_complete
+      #       - d7_node_translation
+      #   - plugin: node_complete_node_translation_lookup
+      #
+      # langcode:
+      #   plugin: null_coalesce
+      #   source:
+      #     - '@node_translation/1'
+      #     - language
+
+  # ID: path
+  # Label: System path
+  # Property type: varchar
+  # Translatable: FALSE
+  # Mandatory: TRUE
+  # Field type: string
+  # Cardinality: 1
+  path:
+    plugin: process_path_alias
+    source: source
+
+  # ID: alias
+  # Label: URL alias
+  # Property type: varchar
+  # Translatable: FALSE
+  # Mandatory: TRUE
+  # Field type: string
+  # Cardinality: 1
+  alias:
+    plugin: concat
+    source:
+      - constants/slash
+      - alias
+
+  # ID: status
+  # Label: Published
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  # Default value: 1
+  status: { }
+
+  # ID: revision_default
+  # Label: Default revision
+  # Property type: int
+  # Translatable: FALSE
+  # Mandatory: FALSE
+  # Field type: boolean
+  # Cardinality: 1
+  revision_default: { }
